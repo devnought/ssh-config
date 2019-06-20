@@ -1,0 +1,11 @@
+[package]
+name = "ssh-config"
+version = "0.1.0"
+authors = ["Kyle Gretchev <kgretchev@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+nom = "5.0.0-beta2"
+
+[dev-dependencies]
+structopt = "0.2"
