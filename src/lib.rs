@@ -25,8 +25,33 @@ pub struct Property<'a> {
     value: &'a str,
 }
 
-pub fn parse(data: &str) -> Result<Vec<Host>, ()> {
-    hosts(data).map(|(_, hosts)| hosts).map_err(|_| ())
+#[derive(Debug)]
+pub struct HostIter<'a> {
+    input: &'a str,
+}
+
+impl<'a> HostIter<'a> {
+    fn new(input: &'a str) -> Self {
+        Self { input }
+    }
+}
+
+impl<'a> Iterator for HostIter<'a> {
+    type Item = Host<'a>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match single_host(self.input) {
+            Ok((input, host)) => {
+                self.input = input;
+                Some(host)
+            }
+            Err(_) => None,
+        }
+    }
+}
+
+pub fn parse(data: &str) -> HostIter {
+    HostIter::new(data)
 }
 
 fn string(i: &str) -> IResult<&str, &str> {
@@ -108,13 +133,11 @@ fn host_block(i: &str) -> IResult<&str, Host> {
     Ok((input, host))
 }
 
-fn hosts(i: &str) -> IResult<&str, Vec<Host>> {
-    let parser = many0(tuple((spaces_or_comments, host_block, spaces_or_comments)));
-    let (input, hosts) = map(parser, |hosts| {
-        hosts.into_iter().map(|(_, h, _)| h).collect()
-    })(i)?;
+fn single_host(i: &str) -> IResult<&str, Host> {
+    let parser = tuple((spaces_or_comments, host_block, spaces_or_comments));
+    let (input, (_, host, _)) = parser(i)?;
 
-    Ok((input, hosts))
+    Ok((input, host))
 }
 
 #[cfg(test)]
@@ -337,7 +360,7 @@ mod tests {
 
     #[test]
     fn many_hosts_no_properties() {
-        let (input, hosts) = hosts(
+        let (input, hosts) = many0(single_host)(
             "  \n\n   \n\n\
              \n       Host dev\n   \
              \n\n\
@@ -362,7 +385,7 @@ mod tests {
 
     #[test]
     fn many_hosts() {
-        let (input, hosts) = hosts(
+        let (input, hosts) = many0(single_host)(
             "\n\n\n\n     Host old    \n\
             Asd    123\n\
             Test zz\
@@ -410,7 +433,7 @@ mod tests {
     #[test]
     fn no_hosts() {
         let empty_input = "       ";
-        let (input, hosts) = hosts(empty_input).expect("Could not parse empty string");
+        let (input, hosts) = many0(single_host)(empty_input).expect("Could not parse empty string");
         let expected_hosts: Vec<Host> = vec![];
 
         assert_eq!(empty_input, input);
@@ -434,8 +457,8 @@ mod tests {
     #[test]
     fn proptery_as_hosts() {
         let bad_input = "       \n\nAsd 123\n\n\n";
-        let (input, hosts) =
-            hosts(bad_input).expect("Could not parse invalid string for host collection");
+        let (input, hosts) = many0(single_host)(bad_input)
+            .expect("Could not parse invalid string for host collection");
 
         let expected_hosts: Vec<Host> = vec![];
 

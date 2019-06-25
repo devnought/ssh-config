@@ -13,5 +13,7 @@ fn main() {
         std::process::exit(1);
     });
 
-    println!("{:#?}", ssh_config::parse(&data));
+    for host in ssh_config::parse(&data) {
+        println!("{:#?}", host);
+    }
 }
