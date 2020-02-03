@@ -8,4 +8,4 @@ edition = "2018"
 nom = "5"
 
 [dev-dependencies]
-structopt = "0.2"
+structopt = "0.3"
