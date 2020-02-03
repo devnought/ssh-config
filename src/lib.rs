@@ -35,6 +35,16 @@ pub struct Property<'a> {
     value: &'a str,
 }
 
+impl<'a> Property<'a> {
+    pub fn key(&self) -> &'a str {
+        self.key
+    }
+
+    pub fn value(&self) -> &'a str {
+        self.value
+    }
+}
+
 #[derive(Debug)]
 pub struct HostIter<'a> {
     input: &'a str,
