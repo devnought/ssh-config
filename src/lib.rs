@@ -19,6 +19,16 @@ pub struct Host<'a> {
     properties: Vec<Property<'a>>,
 }
 
+impl<'a> Host<'a> {
+    pub fn name(&self) -> &'a str {
+        self.name
+    }
+
+    pub fn properties(&self) -> &[Property] {
+        &self.properties
+    }
+}
+
 #[derive(PartialEq, Debug)]
 pub struct Property<'a> {
     key: &'a str,
