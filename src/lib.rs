@@ -79,29 +79,25 @@ fn string(i: &str) -> IResult<&str, &str> {
 }
 
 fn comment(i: &str) -> IResult<&str, &str> {
-    let parser = tuple((tag("#"), not_line_ending));
-    let (input, (_, _)) = parser(i)?;
+    let (input, (_, _)) = tuple((tag("#"), not_line_ending))(i)?;
 
     Ok((input, ""))
 }
 
 fn space_or_equals(i: &str) -> IResult<&str, &str> {
-    let parser = alt((tag("="), space1));
-    let (input, _) = parser(i)?;
+    let (input, _) = alt((tag("="), space1))(i)?;
 
     Ok((input, ""))
 }
 
 fn space_or_comment(i: &str) -> IResult<&str, &str> {
-    let parser = alt((comment, multispace1));
-    let (input, _) = parser(i)?;
+    let (input, _) = alt((comment, multispace1))(i)?;
 
     Ok((input, ""))
 }
 
 fn spaces_or_comments(i: &str) -> IResult<&str, &str> {
-    let parser = many0(space_or_comment);
-    let (input, _) = parser(i)?;
+    let (input, _) = many0(space_or_comment)(i)?;
 
     Ok((input, ""))
 }
@@ -111,8 +107,7 @@ fn not_comment(i: &str) -> IResult<&str, &str> {
 }
 
 fn host_line(i: &str) -> IResult<&str, &str> {
-    let parser = tuple((tag_no_case("host"), space_or_equals, string));
-    let (input, (_, _, name)) = parser(i)?;
+    let (input, (_, _, name)) = tuple((tag_no_case("host"), space_or_equals, string))(i)?;
 
     Ok((input, name))
 }
@@ -125,8 +120,7 @@ fn host_line(i: &str) -> IResult<&str, &str> {
 fn property_line(i: &str) -> IResult<&str, Property> {
     not(peek(host_line))(i)?;
 
-    let parser = tuple((string, space_or_equals, not_comment));
-    let (input, (key, _, value)) = parser(i)?;
+    let (input, (key, _, value)) = tuple((string, space_or_equals, not_comment))(i)?;
 
     Ok((
         input,
@@ -145,17 +139,14 @@ fn properties(i: &str) -> IResult<&str, Vec<Property>> {
 }
 
 fn host_block(i: &str) -> IResult<&str, Host> {
-    let parser = tuple((spaces_or_comments, host_line, properties));
-    let (input, (_, name, properties)) = parser(i)?;
-
+    let (input, (_, name, properties)) = tuple((spaces_or_comments, host_line, properties))(i)?;
     let host = Host { name, properties };
 
     Ok((input, host))
 }
 
 fn single_host(i: &str) -> IResult<&str, Host> {
-    let parser = tuple((spaces_or_comments, host_block, spaces_or_comments));
-    let (input, (_, host, _)) = parser(i)?;
+    let (input, (_, host, _)) = tuple((spaces_or_comments, host_block, spaces_or_comments))(i)?;
 
     Ok((input, host))
 }
